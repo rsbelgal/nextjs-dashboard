@@ -2,24 +2,34 @@
 
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { use } from 'react';
 
-export default function Search({ placeholder }: { placeholder: string }) {
+export default function Search({
+  placeholder,
+  onSearch,
+}: {
+  placeholder: string;
+  onSearch?: (term: string) => void;
+}) {
   const searchParams = useSearchParams();
   const pathName = usePathname();
   const { replace } = useRouter();
 
   const handleSearch = (term: string) => {
-    // Implement search logic here, e.g., update state or call an API
-    console.log('Search query:', term);
-    const params = new URLSearchParams(searchParams.toString());
-    if (term) {
-      params.set('query', term);
+    // If onSearch callback is provided, use it (for local state management)
+    if (onSearch) {
+      onSearch(term);
     } else {
-      params.delete('query');
+      // Otherwise, use URL params (for server-side routing)
+      const params = new URLSearchParams(searchParams.toString());
+      if (term) {
+        params.set('query', term);
+      } else {
+        params.delete('query');
+      }
+      replace(`${pathName}?${params.toString()}`);
     }
-    replace(`${pathName}?${params.toString()}`);
   };
+
   return (
     <div className="relative flex flex-1 flex-shrink-0">
       <label htmlFor="search" className="sr-only">
